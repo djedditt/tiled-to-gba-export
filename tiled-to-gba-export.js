@@ -1,9 +1,26 @@
 /*
  * tiled-to-gba-export.js
  *
- * This extension adds a "GBA source files" export option that converts all
- * tile layers to 4 byte aligned C arrays of hexadecimal values. Each tile
- * is written out by its ID in hex - blank tiles are defaulted to 0x0000.
+ * This extension adds the "GBA source files" type to the "Export As" menu,
+ * which generates tile arrays that can be loaded directly into GBA VRAM for
+ * use as regular (not affine) tiled backgrounds.
+ *
+ * Valid map sizes are 32x32, 64x32, 32x64 and 64x64.
+ * 
+ * Each tile layer is parsed in 32x32 chunks (a screenblock on GBA) and converted
+ * to a C array of hexadecimal tile IDs - blank tiles are defaulted to 0x0000.
+ * For example, 64x64 maps are parsed as four screenblocks like this:
+ *
+ *                        Array 1
+ *                         +---+
+ * Tile layer 1 64x64      | 0 |
+ *     +---+---+           +---+
+ *     | 0 | 1 |           | 1 |
+ *     +---+---+     >     +---+
+ *     | 2 | 3 |           | 2 |
+ *     +---+---+           +---+
+ *                         | 3 |
+ *                         +---+
  *
  * Copyright (c) 2020 Jay van Hutten
  *
@@ -46,6 +63,17 @@ var customMapFormat = {
     function(p_map, p_fileName) {
         console.time("Export completed in");
 
+        // Only allow valid map sizes to be parsed
+        if (!(p_map.width == 32 || p_map.width == 64)
+            || !(p_map.height == 32 || p_map.height == 64)) {
+            console.error("Export failed: Invalid map size! Map must be 32x32, 64x32, 32x64 or 64x64 in size.");
+            return;
+        }
+
+        // Standard screenblock size for GBA
+        const SCREENBLOCKWIDTH = 32;
+        const SCREENBLOCKHEIGHT = 32;
+
         // Split full filename path into the filename (without extension) and the directory
         var fileBaseName = FileInfo.completeBaseName(p_fileName).replace(/[^a-zA-Z0-9-_]/g, "_");
         var filePath = FileInfo.path(p_fileName)+"/";
@@ -65,33 +93,49 @@ var customMapFormat = {
         var sourceFileData = "";
         sourceFileData += "#include \""+fileBaseName+".h\"\n\n";
 
-        for (let i = 0; i < p_map.layerCount; i++) {
+        for (let i = 0; i < p_map.layerCount; ++i) {
             let currentLayer = p_map.layerAt(i);
 
             // Replace special characters for an underscore
             let currentLayerName = currentLayer.name.replace(/[^a-zA-Z0-9-_]/g, "_");
 
             headerFileData += "extern const unsigned short "+currentLayerName+"["+tilemapLength+"];\n";
+
             sourceFileData += "const unsigned short "+currentLayerName+"["+tilemapLength+"] __attribute__((aligned(4))) =\n";
             sourceFileData += "{\n";
 
+            let screenBlockCountX = currentLayer.width/SCREENBLOCKWIDTH;
+            let screenBlockCountY = currentLayer.height/SCREENBLOCKHEIGHT;
+            let screenBlockID = 0;
+
             if (currentLayer.isTileLayer) {
-                for (let y = 0; y < currentLayer.height; ++y) {
-                    // Indent array rows
-                    sourceFileData += "    ";
+                for (let j = 0; j < screenBlockCountY; ++j) {
+                    for (let k = 0; k < screenBlockCountX; ++k) {
+                        sourceFileData +="    // Screenblock "+screenBlockID+"\n";
+                        screenBlockID++;
 
-                    for (let x = 0; x < currentLayer.width; ++x) {
-                        let tileID = currentLayer.cellAt(x, y).tileId;
+                        for (let y = 0; y < SCREENBLOCKHEIGHT; ++y) {
+                            // Indent array rows
+                            sourceFileData += "    ";
 
-                        // Default to 0x0000 for blank tiles
-                        if (tileID == "-1") {
-                            sourceFileData += "0x0000, ";
-                        } else {
-                            sourceFileData += decimalToHex(tileID, 4)+", ";
+                            for (let x = 0; x < SCREENBLOCKWIDTH; ++x) {
+                                let currentTileX = x+(SCREENBLOCKWIDTH*k);
+                                let currentTileY = y+(SCREENBLOCKHEIGHT*j);
+                                let currentTileID = currentLayer.cellAt(currentTileX, currentTileY).tileId;
+
+                                // Default to 0x0000 for blank tiles
+                                if (currentTileID == "-1") {
+                                    sourceFileData += "0x0000, ";
+                                } else {
+                                    sourceFileData += decimalToHex(currentTileID, 4)+", ";
+                                }
+                            }
+
+                            sourceFileData += "\n";
                         }
-                    }
 
-                    sourceFileData += "\n";
+                        sourceFileData += "\n";
+                    }
                 }
             }
 
