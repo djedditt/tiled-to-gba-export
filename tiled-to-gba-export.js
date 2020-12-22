@@ -164,4 +164,4 @@ var customMapFormat = {
     }
 }
 
-tiled.registerMapFormat("c *.h", customMapFormat)
+tiled.registerMapFormat("gba", customMapFormat)
