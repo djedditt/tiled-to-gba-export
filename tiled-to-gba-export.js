@@ -66,8 +66,7 @@ var customMapFormat = {
         // Only allow valid map sizes to be parsed
         if (!(p_map.width == 32 || p_map.width == 64)
             || !(p_map.height == 32 || p_map.height == 64)) {
-            console.error("Export failed: Invalid map size! Map must be 32x32, 64x32, 32x64 or 64x64 in size.");
-            return;
+            return "Invalid map size! Map must be 32x32, 64x32, 32x64 or 64x64 in size.";
         }
 
         // Standard screenblock size for GBA
@@ -164,4 +163,4 @@ var customMapFormat = {
     }
 }
 
-tiled.registerMapFormat("c *.h", customMapFormat)
+tiled.registerMapFormat("gba", customMapFormat)
