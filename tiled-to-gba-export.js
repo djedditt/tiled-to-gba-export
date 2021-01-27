@@ -1,11 +1,13 @@
 /*
  * tiled-to-gba-export.js
  *
- * This extension adds the "GBA source files" type to the "Export As" menu,
+ * This extension adds the "GBA source files - regular" type to the "Export As" menu,
  * which generates tile arrays that can be loaded directly into GBA VRAM for
  * use as regular (not affine) tiled backgrounds.
  *
- * Valid map sizes are 32x32, 64x32, 32x64 and 64x64.
+ * Valid map sizes for GBA are 32x32, 64x32, 32x64 and 64x64, but this extension
+ * allows you to export maps of any size as long as the width and height are a
+ * mulitple of 32.
  * 
  * Each tile layer is parsed in 32x32 chunks (a screenblock on GBA) and converted
  * to a C array of hexadecimal tile IDs - blank tiles are defaulted to 0x0000.
@@ -56,7 +58,7 @@ function decimalToHex(p_decimal, p_padding) {
 }
 
 var customMapFormat = {
-    name: "GBA source files",
+    name: "GBA source files - regular",
     extension: "c *.h",
     write:
 
@@ -64,9 +66,8 @@ var customMapFormat = {
         console.time("Export completed in");
 
         // Only allow valid map sizes to be parsed
-        if (!(p_map.width == 32 || p_map.width == 64)
-            || !(p_map.height == 32 || p_map.height == 64)) {
-            return "Invalid map size! Map must be 32x32, 64x32, 32x64 or 64x64 in size.";
+        if (p_map.width % 32 != 0 || p_map.height %32 != 0) {
+            return "Export failed: Invalid map size! Map width and height must be a multiple of 32.";
         }
 
         // Standard screenblock size for GBA

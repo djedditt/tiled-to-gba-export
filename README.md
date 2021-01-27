@@ -1,7 +1,7 @@
 # Tiled to GBA export
 This an extension/export plugin for the [Tiled map editor](https://www.mapeditor.org/) that adds the "GBA source files" type to the "Export As" menu. This option generates tile arrays that can be loaded directly into GBA VRAM for use as regular (not affine) tiled backgrounds.
 
-Valid map sizes are 32x32, 64x32, 32x64 and 64x64.
+Strictly speaking, valid map sizes for regular backgrounds are 32x32, 64x32, 32x64 and 64x64. However, this extension allows you to export maps of any size as long as the width and height are a multiple of 32.
 
 Each tile layer is parsed in 32x32 chunks (a screenblock on GBA) and converted to a C array of hexadecimal tile IDs - blank tiles are defaulted to 0x0000. This is a simple and easy to use format for Game Boy Advance development.
 
