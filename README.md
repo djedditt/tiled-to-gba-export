@@ -18,6 +18,8 @@ Each tile layer is parsed in 32x32 chunks - a screenblock on GBA.
 Valid map sizes for affine backgrounds are 16x16, 32x32, 64x64 and 128x128. Each tile layer is parsed linearly, unlike regular backgrounds.
 
 ## Installation
+This extension requires Tiled 1.4 or newer. Get the latest version [here](https://www.mapeditor.org/).
+
 To add this extension to your Tiled installation:
 * Open Tiled and go to Edit > Preferences > Plugins and click the "Open" button to open the extensions directory.
 * Download [tiled-to-gba-export.js](https://raw.githubusercontent.com/djedditt/tiled-to-gba-export/master/tiled-to-gba-export.js) and [tiled-to-gba-export-affine.js](https://raw.githubusercontent.com/djedditt/tiled-to-gba-export/master/tiled-to-gba-export-affine.js) in this repository and copy them to that location. The scripts can be placed either directly in the extensions directory or in a subdirectory.
