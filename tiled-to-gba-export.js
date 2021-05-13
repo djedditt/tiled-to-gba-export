@@ -48,7 +48,16 @@
 
 /* global FileInfo, TextFile, tiled */
 
-function decimalToHex(p_decimal, p_padding) {
+function decimalToHex(p_decimal, p_padding, hflip, vflip) {
+    if (hflip) {
+        // Set the HFLIP bit for this screen entry
+        p_decimal |= (1 << 10);
+    }
+    if (vflip) {
+        // Set the VFLIP bit for this screen entry
+        p_decimal |= (1 << 11);
+    }
+    
     var hexValue = (p_decimal)
         .toString(16)
         .toUpperCase()
@@ -121,13 +130,15 @@ var customMapFormat = {
                             for (let x = 0; x < SCREENBLOCKWIDTH; ++x) {
                                 let currentTileX = x+(SCREENBLOCKWIDTH*k);
                                 let currentTileY = y+(SCREENBLOCKHEIGHT*j);
-                                let currentTileID = currentLayer.cellAt(currentTileX, currentTileY).tileId;
+                                let currentTile = currentLayer.cellAt(currentTileX, currentTileY);
+                                let currentTileID = currentTile.tileId;
 
                                 // Default to 0x0000 for blank tiles
                                 if (currentTileID == "-1") {
                                     sourceFileData += "0x0000, ";
                                 } else {
-                                    sourceFileData += decimalToHex(currentTileID, 4)+", ";
+                                    sourceFileData += decimalToHex(currentTileID, 4,
+                                        currentTile.flippedHorizontally, currentTile.flippedVertically)+", ";
                                 }
                             }
 
