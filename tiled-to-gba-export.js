@@ -121,12 +121,22 @@ var customMapFormat = {
                             for (let x = 0; x < SCREENBLOCKWIDTH; ++x) {
                                 let currentTileX = x+(SCREENBLOCKWIDTH*k);
                                 let currentTileY = y+(SCREENBLOCKHEIGHT*j);
-                                let currentTileID = currentLayer.cellAt(currentTileX, currentTileY).tileId;
+                                let currentTile = currentLayer.cellAt(currentTileX, currentTileY);
+                                var currentTileID = currentTile.tileId;
 
                                 // Default to 0x0000 for blank tiles
                                 if (currentTileID == "-1") {
                                     sourceFileData += "0x0000, ";
                                 } else {
+                                    if (currentTile.flippedHorizontally) {
+                                        // Set the HFLIP bit for this screen entry
+                                        currentTileID |= (1 << 10);
+                                    }
+                                    if (currentTile.flippedVertically) {
+                                        // Set the VFLIP bit for this screen entry
+                                        currentTileID |= (1 << 11);
+                                    }
+
                                     sourceFileData += decimalToHex(currentTileID, 4)+", ";
                                 }
                             }
