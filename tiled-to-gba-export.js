@@ -48,16 +48,7 @@
 
 /* global FileInfo, TextFile, tiled */
 
-function decimalToHex(p_decimal, p_padding, hflip, vflip) {
-    if (hflip) {
-        // Set the HFLIP bit for this screen entry
-        p_decimal |= (1 << 10);
-    }
-    if (vflip) {
-        // Set the VFLIP bit for this screen entry
-        p_decimal |= (1 << 11);
-    }
-    
+function decimalToHex(p_decimal, p_padding) {
     var hexValue = (p_decimal)
         .toString(16)
         .toUpperCase()
@@ -131,14 +122,22 @@ var customMapFormat = {
                                 let currentTileX = x+(SCREENBLOCKWIDTH*k);
                                 let currentTileY = y+(SCREENBLOCKHEIGHT*j);
                                 let currentTile = currentLayer.cellAt(currentTileX, currentTileY);
-                                let currentTileID = currentTile.tileId;
+                                var currentTileID = currentTile.tileId;
 
                                 // Default to 0x0000 for blank tiles
                                 if (currentTileID == "-1") {
                                     sourceFileData += "0x0000, ";
                                 } else {
-                                    sourceFileData += decimalToHex(currentTileID, 4,
-                                        currentTile.flippedHorizontally, currentTile.flippedVertically)+", ";
+                                    if (currentTile.flippedHorizontally) {
+                                        // Set the HFLIP bit for this screen entry
+                                        currentTileID |= (1 << 10);
+                                    }
+                                    if (currentTile.flippedVertically) {
+                                        // Set the VFLIP bit for this screen entry
+                                        currentTileID |= (1 << 11);
+                                    }
+
+                                    sourceFileData += decimalToHex(currentTileID, 4)+", ";
                                 }
                             }
 
